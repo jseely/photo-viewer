@@ -1,0 +1,33 @@
+{
+  "name": "photo-viewer",
+  "version": "1.0.0",
+  "description": "A simple photo viewer/sharer",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/jseely/photo-viewer"
+  },
+  "author": "Justin Seely",
+  "license": "LGPL-3.0",
+  "dependencies": {
+    "@types/axios": "^0.14.0",
+    "@types/react": "^15.0.21",
+    "@types/react-dom": "^0.14.23",
+    "@types/react-measure": "^0.4.6",
+    "axios": "^0.16.1",
+    "jquery": "^3.2.1",
+    "lightbox2": "^2.9.0",
+    "react": "^15.4.2",
+    "react-dom": "^15.4.2",
+    "react-measure": "^1.4.6",
+    "react-treebeard": "^1.1.4"
+  },
+  "devDependencies": {
+    "awesome-typescript-loader": "^3.1.2",
+    "source-map-loader": "^0.2.1",
+    "typescript": "^2.2.2"
+  }
+}
