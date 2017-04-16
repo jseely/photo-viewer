@@ -1,6 +1,4 @@
 declare module 'react-treebeard' {
-    import * as React from 'react';
-
     class Treebeard extends React.Component<any, any>{}
 
     namespace decorators {

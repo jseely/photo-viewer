@@ -16,7 +16,7 @@ func serveImages(w http.ResponseWriter, r *http.Request) {
 	fi, err := os.Stat("/static-assets" + r.URL.Path)
 	if err != nil {
 		w.WriteHeader(404)
-		fmt.Println("Error os.Stat(\"/static-assets\" + \"" + r.URL.Path + "\")")
+		fmt.Println("Error os.Stat(\"/static-assets\" + \""+r.URL.Path+"\"):", err.Error())
 		return
 	}
 

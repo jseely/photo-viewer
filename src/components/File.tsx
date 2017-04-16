@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {Thumbnail} from 'react-bootstrap';
 
 export interface FileProps {
     src: string;
@@ -31,7 +32,9 @@ export class File {
         return this.props.imgSize;
     }
 
-    public render(maxSize: Rectangle){
+    public render(/*maxSize: Rectangle*/){
+        return <Thumbnail src={this.props.img} alt={this.props.src}></Thumbnail>;
+        /*
         let renderSize: Rectangle;
         if (maxSize.height < this.props.imgSize.height || maxSize.width < this.props.imgSize.width){
             renderSize = this._scaleImage(this.props.imgSize, maxSize);
@@ -39,12 +42,11 @@ export class File {
             renderSize = this.props.imgSize;
         }
         if (this.isDir()){
-            return <img src={this.props.img} height={renderSize.height} width={renderSize.width} alt={this.props.src} />;
+            return <Thumbnail src={this.props.img} alt={this.props.src}></Thumbnail>;
         } else {
-            return <a href={this.props.img} data-lightbox="images" data-title={this.props.src}>
-                <img src={this.props.img} height={renderSize.height} width={renderSize.width} alt={this.props.src} />
-            </a>;
+          return <Thumbnail src={this.props.img} alt="></Thumbnail>
         }
+        */
     }
 
     private _scaleImage(imgSize: Rectangle, maxSize: Rectangle): Rectangle {

@@ -1,8 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Gallery } from './Gallery';
-import { Treebeard, decorators } from 'react-treebeard';
-
+import { Header } from './Header';
 
 export interface AppState {
     galleryPath: string;
@@ -61,16 +60,14 @@ export class App extends React.Component<any, AppState> {
         }
     }
 
-    private onToggle(){}
+    public onGalleryNavigate(path: string) {
+      this.setState({ 
+        ...this.state,
+        galleryPath: path
+      });
+    }
 
     render(){
-        return <main>
-            <nav>
-                <Treebeard data={this.state.data} onToggle={this.onToggle} decorators={decorators} />
-            </nav>
-            <section>
-                <Gallery path={this.state.galleryPath} />
-            </section>
-        </main>
+      return <div><Header path={this.state.galleryPath} /><Gallery path={this.state.galleryPath} onNavigate={this.onGalleryNavigate.bind(this)} /></div>
     }
 }
