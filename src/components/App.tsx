@@ -1,73 +1,77 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Gallery } from './Gallery';
-import { Header } from './Header';
+import axios, {AxiosResponse} from 'axios';
+import { Gallery, Image } from './Gallery';
+import { Header, Directory } from './Header';
 
 export interface AppState {
-    galleryPath: string;
-    data: any;
+  dir: Directory;
+  images: Image[];
+}
+
+export interface DirListItem {
+  path: string;
+  isDir: boolean;
 }
 
 export class App extends React.Component<any, AppState> {
-    constructor(){
-        super();
-        this.state = {
-            galleryPath: "/photos/",
-            data: {
-                name: 'treebeard',
-                toggled: true,
-                children: [
-                    {
-                        name: 'example',
-                        children: [
-                            { name: 'app.js' },
-                            { name: 'data.js' },
-                            { name: 'index.html' },
-                            { name: 'styles.js' },
-                            { name: 'webpack.config.js' }
-                        ]
-                    },
-                    {
-                        name: 'node_modules',
-                        loading: true,
-                        children: []
-                    },
-                    {
-                        name: 'src',
-                        children: [
-                            {
-                                name: 'components',
-                                children: [
-                                    { name: 'decorators.js' },
-                                    { name: 'treebeard.js' }
-                                ]
-                            },
-                            { name: 'index.js' }
-                        ]
-                    },
-                    {
-                        name: 'themes',
-                        children: [
-                            { name: 'animations.js' },
-                            { name: 'default.js' }
-                        ]
-                    },
-                    { name: 'Gulpfile.js' },
-                    { name: 'index.js' },
-                    { name: 'package.json' }
-                ]
-            }
-        }
-    }
+  readonly galleryApiPath = "/"
 
-    public onGalleryNavigate(path: string) {
-      this.setState({ 
+  constructor(){
+    super();
+    this.state = {
+      dir: { path: this.galleryApiPath, subDirs: [] },
+      images: []
+    }
+    this.onGalleryNavigate(this.state.dir.path);
+  }
+
+  public shouldComponentUpdate(nextProps: any, nextState: AppState){
+    if (this.state.dir.path != nextState.dir.path 
+    || this.state.dir.subDirs.length != nextState.dir.subDirs.length 
+    || this.state.images.length != nextState.images.length){
+      return true;
+    }
+    for(var i = 0; i < this.state.dir.subDirs.length; i++){
+      if (this.state.dir.subDirs[i] != nextState.dir.subDirs[i]){
+        return true;
+      }
+    }
+    for(var i = 0; i< this.state.images.length; i++){
+      if (this.state.images[i] != nextState.images[i]){
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private formatDirListResponse(path: string, dirItems: DirListItem[]): [Directory, Image[]]{
+    let [dirs, files]: [string[], Image[]] = [[], []];
+    for (let item of dirItems){
+      if (item.isDir){
+        dirs.push(item.path.split("/").filter(s => s.length != 0).pop());
+      } else {
+        files.push({src: item.path});
+      }
+    }
+    return [{path: path, subDirs: dirs}, files];
+  }
+
+  public onGalleryNavigate(path: string) {
+    axios({
+      method: "VIEW",
+      url: window.location.origin + path
+    }).then((resp: AxiosResponse) => {
+      let [dir, images] = this.formatDirListResponse(path, resp.data);
+      this.setState({
         ...this.state,
-        galleryPath: path
-      });
-    }
+        dir: dir,
+        images: images
+      })
+    });
+  }
 
-    render(){
-      return <div><Header path={this.state.galleryPath} /><Gallery path={this.state.galleryPath} onNavigate={this.onGalleryNavigate.bind(this)} /></div>
-    }
+  render(){
+    return <div><Header dir={this.state.dir} onNavigate={this.onGalleryNavigate.bind(this)} /><Gallery images={this.state.images} /></div>
+  }
 }
