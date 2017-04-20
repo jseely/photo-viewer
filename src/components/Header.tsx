@@ -56,9 +56,7 @@ export class Header extends React.Component<HeaderProps, any> {
     let navHead = <Navbar.Header><Navbar.Brand><a href="#">Photos</a></Navbar.Brand></Navbar.Header>;
     
     let dirs = this.props.dir.path.split("/").filter((s) => s.length != 0);
-    if (dirs.length == 0) {
-      dirs = ["/"]
-    }
+    dirs.unshift("/")
     let navs: any[] = [];
     for(var i = 0; i < dirs.length; i++) {
       if (i == dirs.length - 1) {
@@ -75,7 +73,7 @@ export class Header extends React.Component<HeaderProps, any> {
           navs.push(<NavItem eventKey={this.props.dir.path}>{dirs[i]}</NavItem>);
         }
       } else {
-        navs.push(<NavItem eventKey={this.toPath(dirs.slice(0, i+1))}>{dirs[i]}</NavItem>);
+        navs.push(<NavItem eventKey={ dirs[i] == "/" ? "/" : this.toPath(dirs.slice(0, i+1))}>{dirs[i]}</NavItem>);
       }
     }
     return <Navbar>{navHead}<Nav onSelect={this.handleSelect.bind(this)}>{navs}</Nav><Nav pullRight><ul className="nav navbar-nav navbar-right"><li role="presentation"><a href="https://github.com/jseely/photo-viewer" style={{height: "50px", padding: "9px"}}>{this.githubLogo()}</a></li></ul></Nav></Navbar>
