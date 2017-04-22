@@ -1,6 +1,8 @@
 all:
 	webpack
 	docker build -t jseely/photo-viewer .
+
+push: all
 	docker push jseely/photo-viewer
 
 ifdef PHOTO_DIR
