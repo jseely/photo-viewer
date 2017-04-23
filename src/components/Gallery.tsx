@@ -12,6 +12,7 @@ interface GalleryState {
   showSlides: boolean;
   slideIndex: number;
   slideDirection: any;
+  contentHeight: number;
 }
 
 export interface Image {
@@ -19,6 +20,8 @@ export interface Image {
 }
 
 export class Gallery extends React.Component<GalleryProps, any>{
+  modalRef: any = {};
+
   constructor(props: GalleryProps){
     super();
     this.state = {
@@ -27,6 +30,25 @@ export class Gallery extends React.Component<GalleryProps, any>{
       slideDirection: null
     }
     this.open = this.open.bind(this);
+    this.sizeDialog = this.sizeDialog.bind(this);
+  }
+
+  public componentDidUpdate() {
+    if (window.requestAnimationFrame) {
+      window.requestAnimationFrame(this.sizeDialog);
+    } else {
+      window.setTimeout(this.sizeDialog, 50);
+    }
+  }
+
+  private sizeDialog() {
+    if (!this.refs.content) return;
+    let contentHeight = this.modalRef.getBoundingClientRect().height;
+    console.log(contentHeight)
+    this.setState({
+      ...this.state,
+      contentHeight: contentHeight
+    });
   }
 
   public shouldComponentUpdate(nextProps: GalleryProps, nextState: GalleryState): boolean {
@@ -64,6 +86,31 @@ export class Gallery extends React.Component<GalleryProps, any>{
     })
   }
 
+  private getModalStyle(): any {
+    const padding: number = 20
+    let height = (this.state.contentHeight + padding);
+    let heightPx = height + "px";
+    let heightOffset = height/2;
+    let offsetPx = heightOffset + "px";
+
+    return {
+      content: {
+        border: '0',
+        borderRadius: '4px',
+        bottom: 'auto',
+        height: heightPx,
+        left: '50%',
+        padding: '2rem',
+        position: 'fixed',
+        right: 'auto',
+        top: '50%',
+        transform: 'translate(-50%,-' + offsetPx + ')',
+        width: '40%',
+        maxWidth: '40rem'
+      }
+    };
+  }
+
   render(){
     if (this.props.images == null){
       return <div id="Gallery" />
@@ -82,14 +129,14 @@ export class Gallery extends React.Component<GalleryProps, any>{
           </div>
         </Col>);
         if (this.state.showSlides) {
-          carouselItems.push(<Carousel.Item><img width={900} height={500} alt="900x500" src={this.props.images[j].src} /></Carousel.Item>)
+          carouselItems.push(<Carousel.Item><img alt={this.props.images[j].src} src={this.props.images[j].src} /></Carousel.Item>)
         }
       }
       rows.push(<Row>{cols}</Row>)
     }
     return <div>
       <Grid id="gallery">{rows}</Grid>
-      <Modal show={this.state.showSlides} onHide={this.close.bind(this)}>
+      <Modal show={this.state.showSlides} ref={(input: any) => { this.modalRef = input; }} onHide={this.close.bind(this)} style={this.getModalStyle}>
         <Modal.Body>
           <Carousel activeIndex={this.state.slideIndex} direction={this.state.slideDirection} onSelect={this.handleSelect.bind(this)}>
             { carouselItems }
