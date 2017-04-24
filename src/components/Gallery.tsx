@@ -31,6 +31,7 @@ export class Gallery extends React.Component<GalleryProps, any>{
     }
     this.open = this.open.bind(this);
     this.sizeDialog = this.sizeDialog.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
   }
 
   public componentDidUpdate() {
@@ -75,13 +76,13 @@ export class Gallery extends React.Component<GalleryProps, any>{
   }
 
   private open(g: Gallery, i: number) {
-    g.setState({ ...g.state, showSlides: true, slideIndex: i, slideDirection: null })
+    g.setState({ ...g.state, showSlides: true, slideIndex: i%this.props.images.length, slideDirection: null })
   }
 
   private handleSelect(selectedIndex: any, e?: any) {
     this.setState({
       ...this.state,
-      slideIndex: selectedIndex,
+      slideIndex: selectedIndex%this.props.images.length,
       slideDirection: e.direction
     })
   }
@@ -111,6 +112,25 @@ export class Gallery extends React.Component<GalleryProps, any>{
     };
   }
 
+  private navSlide(amount: number) {
+    this.setState({
+      ...this.state,
+      slideIndex: (this.state.slideIndex + amount + this.props.images.length)%this.props.images.length,
+      slideDirection: amount > 0 ? "right" : "left"
+    });
+  }
+
+  private handleKeyDown(e: any) {
+    switch(e.keycode) {
+    case 37:
+      this.navSlide(-1);
+      return;
+    case 39:
+      this.navSlide(1);
+      return;
+    }
+  }
+
   render(){
     if (this.props.images == null){
       return <div id="Gallery" />
@@ -118,6 +138,7 @@ export class Gallery extends React.Component<GalleryProps, any>{
 
     let rows: any[] = [];
     let carouselItems: any[] = [];
+    let carouselIndicators: any[] = [];
     for(var i = 0; i < this.props.images.length; i += this.props.cols) {
       let cols: any[] = [];
       for(var j = i; j < i + this.props.cols && j < this.props.images.length; j++) {
@@ -129,18 +150,31 @@ export class Gallery extends React.Component<GalleryProps, any>{
           </div>
         </Col>);
         if (this.state.showSlides) {
-          carouselItems.push(<Carousel.Item><img alt={this.props.images[j].src} src={this.props.images[j].src} /></Carousel.Item>)
+          carouselIndicators.push(<li className={j == this.state.slideIndex%this.props.images.length ? "active" : ""}></li>);
+          carouselItems.push(<div className={j == this.state.slideIndex%this.props.images.length ? "item active" : "item"}><img alt={this.props.images[j].src} src={this.props.images[j].src} /></div>);
         }
       }
       rows.push(<Row>{cols}</Row>)
     }
     return <div>
+      <input type="hidden" onKeyDown={this.handleKeyDown} />
       <Grid id="gallery">{rows}</Grid>
       <Modal show={this.state.showSlides} ref={(input: any) => { this.modalRef = input; }} onHide={this.close.bind(this)} style={this.getModalStyle}>
         <Modal.Body>
-          <Carousel activeIndex={this.state.slideIndex} direction={this.state.slideDirection} onSelect={this.handleSelect.bind(this)}>
-            { carouselItems }
-          </Carousel>
+          <div className="carousel slide">
+            <ol className="carousel-indicators">
+              {carouselIndicators}
+            </ol>
+            <div className="carousel-inner">
+              {carouselItems}
+            </div>
+            <a className="carousel-control left" role="button" href="#" onClick={(e) => {this.navSlide(-1)}}>
+              <span className="glyphicon glyphicon-chevron-left"></span>
+            </a>
+            <a className="carousel-control right" role="button" href="#" onClick={(e) => {this.navSlide(1)}}>
+              <span className="glyphicon glyphicon-chevron-right"></span>
+            </a>
+          </div>
         </Modal.Body>
       </Modal>
     </div>
