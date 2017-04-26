@@ -69,8 +69,9 @@ export class Gallery extends React.Component<GalleryProps, any>{
     this.setState({ ...this.state, showSlides: false })
   }
 
-  private open(g: Gallery, i: number) {
-    g.setState({ ...g.state, showSlides: true, slideIndex: i%this.props.images.length, slideDirection: null })
+  private open(i: number) {
+    console.log(i);
+    this.setState({ ...this.state, showSlides: true, slideIndex: i%this.props.images.length, slideDirection: null })
   }
 
   private handleSelect(selectedIndex: any, e?: any) {
@@ -143,7 +144,7 @@ export class Gallery extends React.Component<GalleryProps, any>{
       for(var j = i; j < i + this.props.cols && j < this.props.images.length; j++) {
         cols.push(<Col sm={2} md={2}>
           <div className="thumbnail">
-            <a href="#" onClick={ () => this.open(this, j) } >
+            <a href="#" onClick={ this.open.bind(this, j) } >
               <img src={ this.props.images[j].src } alt={ this.props.images[j].src } />
             </a>
           </div>
