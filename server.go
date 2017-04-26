@@ -2,14 +2,14 @@ package main
 
 import (
 	"fmt"
-	//	"image"
+	"image"
+	_ "image/jpeg"
+	_ "image/png"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"time"
-	//	_ "image/jpeg"
-	//	_ "image/png"
 )
 
 const logMT string = "%v: %v %v request for %v to %v."
@@ -73,7 +73,10 @@ func ViewAsset(w http.ResponseWriter, r *http.Request, assetPath string) {
 	w.Header().Add("Content-Type", "application/json")
 	resp := "["
 	for i, fi := range dfi {
-		jsonObj := fmt.Sprintf("{\"path\":\"%v\",\"isDir\":%v}", path.Join(r.URL.Path, fi.Name()), fi.IsDir())
+		jsonObj, err := createJsonObject(af, r.URL.Path, fi)
+		if err != nil {
+			continue
+		}
 		if i == 0 {
 			resp += jsonObj
 		} else {
@@ -83,6 +86,31 @@ func ViewAsset(w http.ResponseWriter, r *http.Request, assetPath string) {
 	resp += "]\n\n"
 	fmt.Fprint(w, resp)
 	logMessage(r, "Finished serving", map[string]string{"File": af, "Response": resp})
+}
+
+func createJsonObject(dirPath, apiDirPath string, fi os.FileInfo) (string, error) {
+	if fi.IsDir() {
+		return fmt.Sprintf("{\"path\":\"%v\",\"isDir\":%v}", path.Join(apiDirPath, fi.Name()), fi.IsDir()), nil
+	}
+
+	width, height, err := getImageDimensions(path.Join(dirPath, fi.Name()))
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("{\"path\":\"%v\",\"isDir\":%v,\"width\":%v,\"height\":%v}", path.Join(apiDirPath, fi.Name()), fi.IsDir(), width, height), nil
+}
+
+func getImageDimensions(imagePath string) (int, int, error) {
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	image, _, err := image.DecodeConfig(file)
+	if err != nil {
+		return 0, 0, err
+	}
+	return image.Width, image.Height, nil
 }
 
 func GetAsset(w http.ResponseWriter, r *http.Request, assetPath string) {

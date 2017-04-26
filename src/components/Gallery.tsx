@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import axios from 'axios';
-import { Grid, Col, Row, Thumbnail, Modal, Carousel } from 'react-bootstrap';
+import { Grid, Col, Row, Modal } from 'react-bootstrap';
 
 export interface GalleryProps {
   images: Image[];
@@ -12,15 +12,17 @@ interface GalleryState {
   showSlides: boolean;
   slideIndex: number;
   slideDirection: any;
-  contentHeight: number;
 }
 
 export interface Image {
   src: string;
+  width: number;
+  height: number;
 }
 
 export class Gallery extends React.Component<GalleryProps, any>{
-  modalRef: any = {};
+  curHeight: number;
+  curWidth: number;
 
   constructor(props: GalleryProps){
     super();
@@ -32,24 +34,18 @@ export class Gallery extends React.Component<GalleryProps, any>{
     this.open = this.open.bind(this);
     this.sizeDialog = this.sizeDialog.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
+    this.scaleImage = this.scaleImage.bind(this);
   }
 
   public componentDidUpdate() {
-    if (window.requestAnimationFrame) {
-      window.requestAnimationFrame(this.sizeDialog);
-    } else {
-      window.setTimeout(this.sizeDialog, 50);
-    }
+    var element = ReactDOM.findDOMNode(this);
+    this.curHeight = element.clientHeight;
+    this.curWidth = element.clientWidth;
+    console.log(this.curHeight)
+    console.log(this.curWidth)
   }
 
   private sizeDialog() {
-    if (!this.refs.content) return;
-    let contentHeight = this.modalRef.getBoundingClientRect().height;
-    console.log(contentHeight)
-    this.setState({
-      ...this.state,
-      contentHeight: contentHeight
-    });
   }
 
   public shouldComponentUpdate(nextProps: GalleryProps, nextState: GalleryState): boolean {
@@ -87,29 +83,18 @@ export class Gallery extends React.Component<GalleryProps, any>{
     })
   }
 
-  private getModalStyle(): any {
-    const padding: number = 20
-    let height = (this.state.contentHeight + padding);
-    let heightPx = height + "px";
-    let heightOffset = height/2;
-    let offsetPx = heightOffset + "px";
+  private scaleImage(height: number, width: number): [number, number] {
+    if (this.curWidth*0.8 > width && this.curHeight*0.8 > height) {
+      return [height, width];
+    }
 
-    return {
-      content: {
-        border: '0',
-        borderRadius: '4px',
-        bottom: 'auto',
-        height: heightPx,
-        left: '50%',
-        padding: '2rem',
-        position: 'fixed',
-        right: 'auto',
-        top: '50%',
-        transform: 'translate(-50%,-' + offsetPx + ')',
-        width: '40%',
-        maxWidth: '40rem'
-      }
-    };
+    var wScaleFactor = this.curWidth*0.8/width;
+    var hScaleFactor = this.curHeight*0.8/height;
+    if (hScaleFactor > wScaleFactor) {
+      return [wScaleFactor*height, wScaleFactor*width];
+    } else {
+      return [hScaleFactor*height, hScaleFactor*width];
+    }
   }
 
   private navSlide(amount: number) {
@@ -139,6 +124,8 @@ export class Gallery extends React.Component<GalleryProps, any>{
     let rows: any[] = [];
     let carouselItems: any[] = [];
     let carouselIndicators: any[] = [];
+    let carWidth: number;
+    let carHeight: number;
     for(var i = 0; i < this.props.images.length; i += this.props.cols) {
       let cols: any[] = [];
       for(var j = i; j < i + this.props.cols && j < this.props.images.length; j++) {
@@ -150,8 +137,13 @@ export class Gallery extends React.Component<GalleryProps, any>{
           </div>
         </Col>);
         if (this.state.showSlides) {
+          var [height, width] = this.scaleImage(this.props.images[this.state.slideIndex].height, this.props.images[this.state.slideIndex].width);
+          if (this.state.slideIndex == j) {
+            carHeight = height;
+            carWidth = width;
+          }
           carouselIndicators.push(<li className={j == this.state.slideIndex%this.props.images.length ? "active" : ""}></li>);
-          carouselItems.push(<div className={j == this.state.slideIndex%this.props.images.length ? "item active" : "item"}><img alt={this.props.images[j].src} src={this.props.images[j].src} /></div>);
+          carouselItems.push(<div height={height} width={width} className={j == this.state.slideIndex%this.props.images.length ? "item active" : "item"}><img height={height} width={width} alt={this.props.images[j].src} src={this.props.images[j].src} /></div>);
         }
       }
       rows.push(<Row>{cols}</Row>)
@@ -159,13 +151,13 @@ export class Gallery extends React.Component<GalleryProps, any>{
     return <div>
       <input type="hidden" onKeyDown={this.handleKeyDown} />
       <Grid id="gallery">{rows}</Grid>
-      <Modal show={this.state.showSlides} ref={(input: any) => { this.modalRef = input; }} onHide={this.close.bind(this)} style={this.getModalStyle}>
+      <Modal show={this.state.showSlides} onHide={this.close.bind(this)} width={carWidth+40}>
         <Modal.Body>
           <div className="carousel slide">
             <ol className="carousel-indicators">
               {carouselIndicators}
             </ol>
-            <div className="carousel-inner">
+            <div className="carousel-inner" width={carWidth} height={carHeight}>
               {carouselItems}
             </div>
             <a className="carousel-control left" role="button" href="#" onClick={(e) => {this.navSlide(-1)}}>

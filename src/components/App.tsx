@@ -45,13 +45,13 @@ export class App extends React.Component<any, AppState> {
     return false;
   }
 
-  private formatDirListResponse(path: string, dirItems: DirListItem[]): [Directory, Image[]]{
+  private formatDirListResponse(path: string, dirItems: any[]): [Directory, Image[]]{
     let [dirs, files]: [string[], Image[]] = [[], []];
     for (let item of dirItems){
       if (item.isDir){
-        dirs.push(item.path.split("/").filter(s => s.length != 0).pop());
+        dirs.push(item.path.split("/").filter((s: string) => s.length != 0).pop());
       } else {
-        files.push({src: item.path});
+        files.push({src: item.path, width: item.width, height: item.height});
       }
     }
     return [{path: path, subDirs: dirs}, files];
