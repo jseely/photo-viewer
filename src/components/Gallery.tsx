@@ -41,8 +41,6 @@ export class Gallery extends React.Component<GalleryProps, any>{
     var element = ReactDOM.findDOMNode(this);
     this.curHeight = element.clientHeight;
     this.curWidth = element.clientWidth;
-    console.log(this.curHeight)
-    console.log(this.curWidth)
   }
 
   private sizeDialog() {
@@ -88,8 +86,8 @@ export class Gallery extends React.Component<GalleryProps, any>{
       return [height, width];
     }
 
-    var wScaleFactor = this.curWidth*0.8/width;
-    var hScaleFactor = this.curHeight*0.8/height;
+    var wScaleFactor = window.innerWidth*0.8/width;
+    var hScaleFactor = window.innerHeight*0.8/height;
     if (hScaleFactor > wScaleFactor) {
       return [wScaleFactor*height, wScaleFactor*width];
     } else {
@@ -114,6 +112,20 @@ export class Gallery extends React.Component<GalleryProps, any>{
       this.navSlide(1);
       return;
     }
+  }
+
+  private getModalStyle(imageHeight: number, imageWidth: number): any {
+    return {
+      width: String(imageWidth + 40) + "px",
+      height: String(imageHeight + 80) + "px",
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      margin: "auto",
+      overflow: "hidden"
+    };
   }
 
   render(){
@@ -143,7 +155,7 @@ export class Gallery extends React.Component<GalleryProps, any>{
             carWidth = width;
           }
           carouselIndicators.push(<li className={j == this.state.slideIndex%this.props.images.length ? "active" : ""}></li>);
-          carouselItems.push(<div height={height} width={width} className={j == this.state.slideIndex%this.props.images.length ? "item active" : "item"}><img height={height} width={width} alt={this.props.images[j].src} src={this.props.images[j].src} /></div>);
+          carouselItems.push(<div className={j == this.state.slideIndex%this.props.images.length ? "item active" : "item"}><img height={height} width={width} alt={this.props.images[j].src} src={this.props.images[j].src} /></div>);
         }
       }
       rows.push(<Row>{cols}</Row>)
@@ -151,13 +163,13 @@ export class Gallery extends React.Component<GalleryProps, any>{
     return <div>
       <input type="hidden" onKeyDown={this.handleKeyDown} />
       <Grid id="gallery">{rows}</Grid>
-      <Modal show={this.state.showSlides} onHide={this.close.bind(this)} width={carWidth+40}>
+      <Modal show={this.state.showSlides} onHide={this.close.bind(this)} style={this.getModalStyle(carHeight, carWidth)}>
         <Modal.Body>
           <div className="carousel slide">
             <ol className="carousel-indicators">
               {carouselIndicators}
             </ol>
-            <div className="carousel-inner" width={carWidth} height={carHeight}>
+            <div className="carousel-inner">
               {carouselItems}
             </div>
             <a className="carousel-control left" role="button" href="#" onClick={(e) => {this.navSlide(-1)}}>
